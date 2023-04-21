@@ -45,6 +45,7 @@ pub fn main() !void {
             const grads2 = try relu1.backwards(grads1.input_grads, &allocator);
             const grads3 = try layer1.backwards(grads2, &allocator);
             layer1.apply_gradients(grads3.weight_grads);
+            layer2.apply_gradients(grads1.weight_grads);
 
             // Free memory
             allocator.free(outputs1);

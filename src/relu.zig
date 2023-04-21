@@ -15,7 +15,7 @@ pub const Relu = struct {
         var i: usize = 0;
         while (i < inputs.len): (i += 1) {
             if (inputs[i] < 0) {
-                outputs[i] = 0;
+                outputs[i] = 0.01 * inputs[i];
             } else {
                 outputs[i] = inputs[i];
             }
@@ -29,7 +29,7 @@ pub const Relu = struct {
         var i: usize = 0;
         while (i < self.last_inputs.len): (i += 1) {
             if (self.last_inputs[i] < 0) {
-                grads[i] = 0;
+                grads[i] = 0.01 * grads[i];
             } else {
                 outputs[i] = grads[i];
             }

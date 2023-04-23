@@ -11,6 +11,7 @@ const BATCH_SIZE: u32 = 32;
 const EPOCHS: u32 = 50;
 
 pub fn main() !void {
+    var allocator = std.heap.page_allocator;
 
     // Get MNIST data
     const mnist_data = try mnist.read_mnist(&allocator);

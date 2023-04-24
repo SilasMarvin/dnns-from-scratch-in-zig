@@ -4,6 +4,12 @@ pub fn NLL(comptime I: usize) type {
     const NLLOuput = struct {
         loss: []f64,
         input_grads: []f64,
+        const Self = @This();
+
+        pub fn destruct(self: Self, allocator: *std.mem.Allocator) void {
+            allocator.free(self.loss);
+            allocator.free(self.input_grads);
+        }
     };
 
     return struct {

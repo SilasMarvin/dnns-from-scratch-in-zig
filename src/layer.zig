@@ -1,7 +1,16 @@
 const std = @import("std");
 
 pub fn Layer(comptime I: usize, comptime O: usize) type {
-    const LayerGrads = struct { weight_grads: []f64, input_grads: []f64 };
+    const LayerGrads = struct { 
+        weight_grads: []f64, 
+        input_grads: []f64,
+        const Self = @This();
+
+        pub fn destruct(self: Self, allocator: *std.mem.Allocator) void {
+            allocator.free(self.weight_grads);
+            allocator.free(self.input_grads);
+        }
+    };
 
     return struct {
         inputs: usize,
@@ -49,7 +58,7 @@ pub fn Layer(comptime I: usize, comptime O: usize) type {
             return LayerGrads{ .weight_grads = weight_grads, .input_grads = input_grads };
         }
 
-        pub fn apply_gradients(self: *Self, grads: []f64) void {
+        pub fn applyGradients(self: *Self, grads: []f64) void {
             var i: usize = 0;
             while (i < I * O): (i += 1) {
                 self.weights[i] -= 0.01 * grads[i];

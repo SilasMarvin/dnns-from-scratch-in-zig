@@ -8,13 +8,13 @@ const std = @import("std");
 const INPUT_SIZE: u32 = 784;
 const OUTPUT_SIZE: u32 = 10;
 const BATCH_SIZE: u32 = 32;
-const EPOCHS: u32 = 50;
+const EPOCHS: u32 = 25;
 
 pub fn main() !void {
     var allocator = std.heap.page_allocator;
 
     // Get MNIST data
-    const mnist_data = try mnist.read_mnist(&allocator);
+    const mnist_data = try mnist.readMnist(&allocator);
 
     // Prep loss function
     const loss_function = nll.NLL(OUTPUT_SIZE);
@@ -44,20 +44,17 @@ pub fn main() !void {
             const grads1 = try layer2.backwards(loss.input_grads, &allocator);
             const grads2 = try relu1.backwards(grads1.input_grads, &allocator);
             const grads3 = try layer1.backwards(grads2, &allocator);
-            layer1.apply_gradients(grads3.weight_grads);
-            layer2.apply_gradients(grads1.weight_grads);
+            layer1.applyGradients(grads3.weight_grads);
+            layer2.applyGradients(grads1.weight_grads);
 
             // Free memory
             allocator.free(outputs1);
             allocator.free(outputs2);
             allocator.free(outputs3);
-            allocator.free(grads1.weight_grads);
-            allocator.free(grads1.input_grads);
+            grads1.destruct(&allocator);
             allocator.free(grads2);
-            allocator.free(grads3.weight_grads);
-            allocator.free(grads3.input_grads);
-            allocator.free(loss.loss);
-            allocator.free(loss.input_grads);
+            grads3.destruct(&allocator);
+            loss.destruct(&allocator);
         }
 
         // Do validation
@@ -91,6 +88,7 @@ pub fn main() !void {
     }
 
     layer1.destruct(&allocator);
+    layer2.destruct(&allocator);
     mnist_data.destruct(&allocator);
 }
 
@@ -175,4 +173,49 @@ test "Forward once" {
 
     allocator.free(loss.loss);
     allocator.free(loss.input_grads);
+}
+
+test "Train Memory Leak" {
+    var allocator = std.testing.allocator;
+
+    // Get MNIST data
+    const mnist_data = try mnist.readMnist(&allocator);
+
+    // Prep loss function
+    const loss_function = nll.NLL(OUTPUT_SIZE);
+
+    // Prep NN
+    var layer1 = try layer.Layer(INPUT_SIZE, 100).init(&allocator);
+    var relu1 = relu.Relu.new();
+    var layer2 = try layer.Layer(100, OUTPUT_SIZE).init(&allocator);
+
+    // Prep inputs and targets
+    const inputs = mnist_data.train_images[0..INPUT_SIZE];
+    const targets = mnist_data.train_labels[0..1];
+
+    // Go forward and get loss
+    const outputs1 = try layer1.forward(inputs, &allocator);
+    const outputs2 = try relu1.forward(outputs1, &allocator);
+    const outputs3 = try layer2.forward(outputs2, &allocator);
+    const loss = try loss_function.nll(outputs3, targets, &allocator);
+
+    // Update network
+    const grads1 = try layer2.backwards(loss.input_grads, &allocator);
+    const grads2 = try relu1.backwards(grads1.input_grads, &allocator);
+    const grads3 = try layer1.backwards(grads2, &allocator);
+    layer1.applyGradients(grads3.weight_grads);
+    layer2.applyGradients(grads1.weight_grads);
+
+    // Free memory
+    allocator.free(outputs1);
+    allocator.free(outputs2);
+    allocator.free(outputs3);
+    grads1.destruct(&allocator);
+    allocator.free(grads2);
+    grads3.destruct(&allocator);
+    loss.destruct(&allocator);
+
+    layer1.destruct(&allocator);
+    layer2.destruct(&allocator);
+    mnist_data.destruct(&allocator);
 }

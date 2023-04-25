@@ -67,7 +67,7 @@ pub fn main() !void {
         while (b < 10000) : (b += 1) {
             var max_guess: f64 = outputs3[b * OUTPUT_SIZE];
             var guess_index: usize = 0;
-            for (outputs3[b * OUTPUT_SIZE .. (b + 1) * OUTPUT_SIZE]) |o, oi| {
+            for (outputs3[b * OUTPUT_SIZE .. (b + 1) * OUTPUT_SIZE], 0..) |o, oi| {
                 if (o > max_guess) {
                     max_guess = o;
                     guess_index = oi;

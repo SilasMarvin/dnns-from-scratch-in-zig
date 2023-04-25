@@ -16,9 +16,6 @@ pub fn main() !void {
     // Get MNIST data
     const mnist_data = try mnist.readMnist(&allocator);
 
-    // Prep loss function
-    const loss_function = nll.NLL(OUTPUT_SIZE);
-
     // Prep NN
     var layer1 = try layer.Layer(INPUT_SIZE, 100).init(&allocator);
     var relu1 = relu.Relu.new();
@@ -38,7 +35,7 @@ pub fn main() !void {
             const outputs1 = try layer1.forward(inputs, &allocator);
             const outputs2 = try relu1.forward(outputs1, &allocator);
             const outputs3 = try layer2.forward(outputs2, &allocator);
-            const loss = try loss_function.nll(outputs3, targets, &allocator);
+            const loss = try nll.nll(OUTPUT_SIZE, outputs3, targets, &allocator);
 
             // Update network
             const grads1 = try layer2.backwards(loss.input_grads, &allocator);
@@ -95,8 +92,6 @@ pub fn main() !void {
 test "Forward once" {
     var allocator = std.testing.allocator;
 
-    const loss_function = nll.NLL(2);
-
     // Create layer with custom weights
     var layer1 = try layer.Layer(2, 2).init(&allocator);
     allocator.free(layer1.weights);
@@ -121,7 +116,7 @@ test "Forward once" {
     // Test loss outputs
     var targets_array = [_]u8{ 0, 1 };
     const targets: []u8 = &targets_array;
-    const loss = try loss_function.nll(outputs, targets, &allocator);
+    const loss = try nll.nll(2, outputs, targets, &allocator);
     allocator.free(outputs);
     const expected_loss = [2]f64{ 0.7082596763414484, 0.658759555548697 };
     i = 0;
@@ -181,9 +176,6 @@ test "Train Memory Leak" {
     // Get MNIST data
     const mnist_data = try mnist.readMnist(&allocator);
 
-    // Prep loss function
-    const loss_function = nll.NLL(OUTPUT_SIZE);
-
     // Prep NN
     var layer1 = try layer.Layer(INPUT_SIZE, 100).init(&allocator);
     var relu1 = relu.Relu.new();
@@ -197,7 +189,7 @@ test "Train Memory Leak" {
     const outputs1 = try layer1.forward(inputs, &allocator);
     const outputs2 = try relu1.forward(outputs1, &allocator);
     const outputs3 = try layer2.forward(outputs2, &allocator);
-    const loss = try loss_function.nll(outputs3, targets, &allocator);
+    const loss = try nll.nll(OUTPUT_SIZE, outputs3, targets, &allocator);
 
     // Update network
     const grads1 = try layer2.backwards(loss.input_grads, &allocator);

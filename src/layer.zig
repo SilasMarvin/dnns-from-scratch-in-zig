@@ -1,12 +1,12 @@
 const std = @import("std");
 
 pub fn Layer(comptime I: usize, comptime O: usize) type {
-    const LayerGrads = struct { 
-        weight_grads: []f64, 
+    const LayerGrads = struct {
+        weight_grads: []f64,
         input_grads: []f64,
         const Self = @This();
 
-        pub fn destruct(self: Self, allocator: *std.mem.Allocator) void {
+        pub fn deinit(self: Self, allocator: std.mem.Allocator) void {
             allocator.free(self.weight_grads);
             allocator.free(self.input_grads);
         }
@@ -19,7 +19,7 @@ pub fn Layer(comptime I: usize, comptime O: usize) type {
         last_inputs: []f64,
         const Self = @This();
 
-        pub fn forward(self: *Self, inputs: []f64, allocator: *std.mem.Allocator) ![]f64 {
+        pub fn forward(self: *Self, inputs: []f64, allocator: std.mem.Allocator) ![]f64 {
             const batch_size = inputs.len / I;
             var outputs = try allocator.alloc(f64, batch_size * O);
             var b: usize = 0;
@@ -38,7 +38,7 @@ pub fn Layer(comptime I: usize, comptime O: usize) type {
             return outputs;
         }
 
-        pub fn backwards(self: *Self, grads: []f64, allocator: *std.mem.Allocator) !LayerGrads {
+        pub fn backwards(self: *Self, grads: []f64, allocator: std.mem.Allocator) !LayerGrads {
             var weight_grads = try allocator.alloc(f64, I * O);
 
             const batch_size = self.last_inputs.len / I;
@@ -60,12 +60,12 @@ pub fn Layer(comptime I: usize, comptime O: usize) type {
 
         pub fn applyGradients(self: *Self, grads: []f64) void {
             var i: usize = 0;
-            while (i < I * O): (i += 1) {
+            while (i < I * O) : (i += 1) {
                 self.weights[i] -= 0.01 * grads[i];
             }
         }
 
-        pub fn init(allocator: *std.mem.Allocator) !Self {
+        pub fn init(allocator: std.mem.Allocator) !Self {
             var memory = try allocator.alloc(f64, I * O);
             var weights = memory[0 .. I * O];
             var prng = std.rand.DefaultPrng.init(123);
@@ -81,7 +81,7 @@ pub fn Layer(comptime I: usize, comptime O: usize) type {
             };
         }
 
-        pub fn destruct(self: *Self, allocator: *std.mem.Allocator) void {
+        pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
             allocator.free(self.weights);
         }
     };

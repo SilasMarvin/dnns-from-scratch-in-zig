@@ -7,3 +7,5 @@ To solve MNIST, create a new directory "data" in the root of the project, downlo
 ```
 zig build run
 ```
+
+If the above url is not working for you, checkout: [https://github.com/cvdfoundation/mnist](https://github.com/cvdfoundation/mnist).

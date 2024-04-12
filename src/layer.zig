@@ -50,7 +50,7 @@ pub fn Layer(comptime I: usize, comptime O: usize) type {
                 while (i < I) : (i += 1) {
                     var o: usize = 0;
                     while (o < O) : (o += 1) {
-                        weight_grads[i * O + o] += (grads[b * O + o] * self.last_inputs[b * I + i]) / @intToFloat(f64, batch_size);
+                        weight_grads[i * O + o] += (grads[b * O + o] * self.last_inputs[b * I + i]) / @as(f64, @floatFromInt(batch_size));
                         input_grads[b * I + i] += grads[b * O + o] * self.weights[i * O + o];
                     }
                 }

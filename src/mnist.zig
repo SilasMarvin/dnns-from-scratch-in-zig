@@ -22,7 +22,7 @@ pub fn readMnist(allocator: std.mem.Allocator) !Data {
     var train_images = try allocator.alloc(f64, 784 * 60000);
     var i: u32 = 0;
     while (i < 784 * 60000) : (i += 1) {
-        const x: f64 = @intToFloat(f64, train_images_u8[i]);
+        const x: f64 = @as(f64, @floatFromInt(train_images_u8[i]));
         train_images[i] = x / 255;
     }
 
@@ -35,7 +35,7 @@ pub fn readMnist(allocator: std.mem.Allocator) !Data {
     var test_images = try allocator.alloc(f64, 784 * 10000);
     i = 0;
     while (i < 784 * 10000) : (i += 1) {
-        const x: f64 = @intToFloat(f64, test_images_u8[i]);
+        const x: f64 = @as(f64, @floatFromInt(test_images_u8[i]));
         test_images[i] = x / 255;
     }
 

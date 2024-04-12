@@ -30,7 +30,7 @@ pub fn NLL(comptime I: usize) type {
             var loss = try allocator.alloc(f64, batch_size);
             b = 0;
             while (b < batch_size) : (b += 1) {
-                loss[b] = -1 * std.math.ln(std.math.exp(inputs[b * I + targets[b]]) / sum_e[b]);
+                loss[b] = -1 * @log(std.math.exp(inputs[b * I + targets[b]]) / sum_e[b]);
             }
 
             var input_grads = try allocator.alloc(f64, batch_size * I);

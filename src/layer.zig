@@ -71,7 +71,8 @@ pub fn Layer(comptime I: usize, comptime O: usize) type {
             var prng = std.rand.DefaultPrng.init(123);
             var w: usize = 0;
             while (w < I * O) : (w += 1) {
-                weights[w] = prng.random().floatNorm(f64) * 0.2;
+                const dev = @as(f64, @floatFromInt(I));
+                weights[w] = prng.random().floatNorm(f64) * @sqrt(2.0 / dev);
             }
             return Self{
                 .inputs = I,
